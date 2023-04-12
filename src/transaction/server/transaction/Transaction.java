@@ -81,7 +81,7 @@ public class Transaction {
      */
     public void addBeforeImage(int account, int balance) {
         this.beforeImage.put(account, balance);
-        this.log("[Transaction.addBeforeImage]  | set before image for account #" +
+        this.log("[Transaction.addBeforeImage] " + transactionId + " | set before image for account #" +
                 account + " with balance " + balance);
     }
 

@@ -53,9 +53,7 @@ public class AccountManager {
 
         if (account != null) {
             TransactionServer.lockManager.setLock(account, transaction, LockType.READ_LOCK);
-
-            transaction.addBeforeImage(account.getAccountNumber(), account.getBalance());
-
+            
             return account.getBalance();
         } else {
             System.err.println("Invalid Account; Account# " + accountNumber + " doesn't exist");

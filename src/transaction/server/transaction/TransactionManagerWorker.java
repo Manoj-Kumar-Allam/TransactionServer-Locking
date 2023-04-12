@@ -94,8 +94,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                                 + transaction.getTransactionId() + " - Error writing transactionID to the client");
                     }
 
-                    System.out.println("[TransactionManagerWorker.run] " +  " OPEN_TRANSACTION" + " #" + transaction.getTransactionId());
-
                     // log transaction event
                     transaction.log("[TransactionManagerWorker.run] " + OPEN_COLOR + "OPEN_TRANSACTION" + RESET_COLOR
                             + " #" + transaction.getTransactionId());
@@ -104,7 +102,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                 // =====================================================================================================
                 case CLOSE_TRANSACTION:
                 // =====================================================================================================
-
                     // unlock transaction, remove it from running transactions and add it to committed transactions
                     TransactionServer.lockManager.unlock(transaction);
                     runningTransactions.remove(transaction);
@@ -128,9 +125,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                     transaction.log("[TransactionManagerWorker.run] " + COMMIT_COLOR + "CLOSE_TRANSACTION" + RESET_COLOR
                             + " #" + transaction.getTransactionId());
 
-                    System.out.println("[TransactionManagerWorker.run] " + " CLOSE_TRANSACTION"
-                            + " #" + transaction.getTransactionId());
-
                     System.out.println(transaction.getLog());
                     keepGoing = false;
                     break;
@@ -146,9 +140,13 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                         balance = TransactionServer.accountManager.read(accountNumber, transaction);
                         message = new Message(READ_REQUEST_RESPONSE, balance);
 
-                        System.out.println("[TransactionManagerWorker.run] " + " READ_TRANSACTION"
+                        transaction.log("[TransactionManagerWorker.run] " + READ_COLOR + "READ_TRANSACTION" + RESET_COLOR
                                 + " #" + transaction.getTransactionId() + " for account #" + accountNumber
                                 + " with balance " + balance + " - successful");
+
+//                        transaction.log("[TransactionManagerWorker.run] " + READ_COLOR + "READ_TRANSACTION" + RESET_COLOR
+//                                + " #" + transaction.getTransactionId() + " - READ");
+
                     } catch (TransactionAbortedException e) {
                         message = new Message(TRANSACTION_ABORTED, null);
 
@@ -158,6 +156,9 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                                 int accNumber = entry.getKey();
                                 int bal = entry.getValue();
 
+                                transaction.log("[TransactionManagerWorker.run] " + ABORT_COLOR + "READ_TRANSACTION" + RESET_COLOR
+                                        + " #" + transaction.getTransactionId() +  "values are reset for account " + accNumber
+                                        + " with balance " + balance);
                                 Account account = TransactionServer.accountManager.getAccountByAccountNumber(accNumber);
                                 account.setBalance(bal);
                             }
@@ -165,14 +166,13 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
 
                         transaction.log("[TransactionManagerWorker.run] " + ABORT_COLOR + "READ_TRANSACTION" + RESET_COLOR
                                 + " #" + transaction.getTransactionId() + " - ABORTED");
-                        System.out.println("[TransactionManagerWorker.run] " + " READ_TRANSACTION"
-                                + " #" + transaction.getTransactionId() + " - ABORTED");
 
                         // Unlock the transaction, remove it from the running list, and add it to the aborted list
                         TransactionServer.lockManager.unlock(transaction);
 
                         runningTransactions.remove(transaction);
                         abortedTransactions.add(transaction);
+
                         System.out.println(transaction.getLog());
                         keepGoing = false;
                     }
@@ -184,8 +184,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                                 + transaction.getTransactionId() + " - Error writing Account Balance to the client");
                     }
 
-                    transaction.log("[TransactionManagerWorker.run] " + READ_COLOR + "READ_TRANSACTION" + RESET_COLOR
-                            + " #" + transaction.getTransactionId() + " - READ");
                     break;
 
                 // WRITE_REQUEST case: Writes a new balance for the specified account
@@ -199,9 +197,11 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
 
                     try {
                         TransactionServer.accountManager.write(accountNumber, balance, transaction);
-                        System.out.println("[TransactionManagerWorker.run] " + " WRITE_TRANSACTION"
+                        transaction.log("[TransactionManagerWorker.run] " + WRITE_COLOR + "WRITE_TRANSACTION" + RESET_COLOR
                                 + " #" + transaction.getTransactionId() + " for account #" + accountNumber +
                                 " and balance " + balance + " - successful");
+//                        transaction.log("[TransactionManagerWorker.run] " + WRITE_COLOR + "WRITE_TRANSACTION" + RESET_COLOR
+//                                + " #" + transaction.getTransactionId() + " - WRITE");
                     } catch (TransactionAbortedException e) {
 
                         message = new Message(TRANSACTION_ABORTED, null);
@@ -212,13 +212,14 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                                 int accNumber = entry.getKey();
                                 int bal = entry.getValue();
 
+                                transaction.log("[TransactionManagerWorker.run] " + ABORT_COLOR + "WRITE_TRANSACTION" + RESET_COLOR
+                                        + " #" + transaction.getTransactionId() +  " - values are reset for account " + accNumber
+                                        + " with balance " + bal);
+
                                 Account account = TransactionServer.accountManager.getAccountByAccountNumber(accNumber);
                                 account.setBalance(bal);
                             }
                         }
-
-                        System.out.println("[TransactionManagerWorker.run] " + " WRITE_TRANSACTION"
-                                + " #" + transaction.getTransactionId() + " - ABORTED");
 
                         transaction.log("[TransactionManagerWorker.run] " + ABORT_COLOR + "WRITE_TRANSACTION" + RESET_COLOR
                                 + " #" + transaction.getTransactionId() + " - ABORTED");
@@ -238,9 +239,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
                         System.err.println("[TransactionManagerWorker.run] READ_TRANSACTION #"
                                 + transaction.getTransactionId() + " - Error writing WRITE RESPONSE to the client");
                     }
-
-                    transaction.log("[TransactionManagerWorker.run] " + WRITE_COLOR + "WRITE_TRANSACTION" + RESET_COLOR
-                            + " #" + transaction.getTransactionId() + " - WRITE");
                     break;
 
                 case SHUTDOWN:
@@ -255,8 +253,6 @@ public class TransactionManagerWorker extends Thread implements MessageTypes, Te
 
                     System.out.println("[TransactionManagerWorker.run]" + " After all the Transactions" +
                             " sum of all accounts balance " + sumOfAllAccounts);
-
-                    TransactionServer.shutDown();
 
                     break;
             }

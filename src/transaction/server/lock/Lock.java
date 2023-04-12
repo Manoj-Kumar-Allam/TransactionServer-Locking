@@ -187,7 +187,6 @@ public class Lock {
             System.out.println("[LockManager.release] Transaction with id #" + transaction.getTransactionId() +
                     " is released all its locks");
             lockHolders.remove(transaction);
-            currentLockType = LockType.EMPTY_LOCK;
             notifyAll();
         }
     }
