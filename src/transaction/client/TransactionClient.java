@@ -97,10 +97,10 @@ public class TransactionClient implements Runnable {
             int accountB = 0;
 
             while((accountA == 0 || accountB == 0) || accountA == accountB) {
-//                accountA = (int) (Math.random() * numberOfAccounts) + 1;
-//                accountB = (int) (Math.random() * numberOfAccounts) + 1;
-                accountA = 2;
-                accountB = 4;
+                accountA = (int) (Math.random() * numberOfAccounts) + 1;
+                accountB = (int) (Math.random() * numberOfAccounts) + 1;
+//                accountA = 2;
+//                accountB = 4;
             }
 
             int amount = 5;
